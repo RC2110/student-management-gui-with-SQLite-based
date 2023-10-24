@@ -13,7 +13,6 @@ class MainWindow(QMainWindow):
         self.setMinimumWidth(400)
         self.setMinimumHeight(300)
 
-
         window= QMainWindow()
         file_menu= window.menuBar().addMenu("&File")
         help_menu= window.menuBar().addMenu("&About")
@@ -26,6 +25,7 @@ class MainWindow(QMainWindow):
         file_menu.triggered.connect(self.add_newrec)
         help_action = QAction("Help", self)
         help_menu.addAction(help_action)
+        help_action.triggered.connect(self.about)
         edit_action= QAction(QIcon("icons/search.png"), "Search", self)
         edit_menu.addAction(edit_action)
         edit_menu.triggered.connect(self.searchwindow)
@@ -45,6 +45,10 @@ class MainWindow(QMainWindow):
         self.status = QStatusBar()
         self.setStatusBar(self.status)
         self.table.cellClicked.connect(self.cell_clicked)
+
+    def about(self):
+        abt = AboutMessage()
+        abt.exec()
 
     def cell_clicked(self):
         edit = QPushButton("Edit Record")
@@ -171,9 +175,6 @@ class DeleteDialog(QDialog):
         message.setText("The message was successfully deleted")
         message.exec()
 
-
-
-
 class AddStudent(QDialog):
     def __init__(self):
         super().__init__()
@@ -248,8 +249,16 @@ class SearchWindow(QDialog):
         cursor.close()
         connection.close()
 
+class AboutMessage(QMessageBox):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("About")
+        self.setText("The app is created in Python Mega Course. This is purely for Education purposes. It gives a overview about working of PyQt6 objects")
+        self.close()
+
 app= QApplication(sys.argv)
 app1 = MainWindow()
 app1.show()
 app1.load_date()
 sys.exit(app.exec())
+
