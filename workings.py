@@ -2,9 +2,9 @@ from PyQt6.QtWidgets import QApplication, QLabel, QGridLayout, QLineEdit, QWidge
 import sys
 from datetime import datetime
 
-class AgeCalculator(QWidget):
+class AgeCalculator(QWidget): #inheriting from QWidget parent. We can also inherit from QVboxlayout
     def __init__(self):
-        super().__init__()
+        super().__init__() # we need to init the parent class as well.
         grid = QGridLayout()
         self.setWindowTitle("Age Calculator")
         name_label= QLabel("Name:")
@@ -22,7 +22,7 @@ class AgeCalculator(QWidget):
         grid.addWidget(calculate,2,0,1,2)
         grid.addWidget(self.name_label2,3,0,1,2)
 
-        self.setLayout(grid)
+        self.setLayout(grid) #using parent class intance variable setlayout to align the grids.
 
     def calculate_age(self):
         year = datetime.now().year
@@ -35,4 +35,4 @@ class AgeCalculator(QWidget):
 app = QApplication(sys.argv)
 age = AgeCalculator()
 age.show()
-sys.exit(app.exec())
+sys.exit(app.exec())  # code to keep the application running
