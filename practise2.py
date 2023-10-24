@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QMainWindow, QTableWidget, QTableWidgetItem, QLabel,\
-    QPushButton, QApplication, QDialog, QVBoxLayout, QLineEdit, QComboBox
+    QPushButton, QApplication, QDialog, QVBoxLayout, QLineEdit, QComboBox, QToolBar, QStatusBar
 
-from PyQt6.QtGui import QAction
+from PyQt6.QtGui import QAction, QIcon
 import sys
 import sqlite3
 from PyQt6.QtCore import Qt
@@ -10,8 +10,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Student Database Management")
-        self.setFixedWidth(400)
-        self.setFixedHeight(300)
+        self.setMinimumWidth(400)
+        self.setMinimumHeight(300)
 
 
         window= QMainWindow()
@@ -19,22 +19,45 @@ class MainWindow(QMainWindow):
         help_menu= window.menuBar().addMenu("&About")
         edit_menu= window.menuBar().addMenu("&Edit")
 
-        file_action = QAction("Add Student", self)
+        self.setMenuWidget(window)
+
+        file_action = QAction(QIcon("icons/add.png"), "Add Student", self)
         file_menu.addAction(file_action)
         file_menu.triggered.connect(self.add_newrec)
         help_action = QAction("Help", self)
         help_menu.addAction(help_action)
-        edit_action= QAction("Search", self)
+        edit_action= QAction(QIcon("icons/search.png"), "Search", self)
         edit_menu.addAction(edit_action)
         edit_menu.triggered.connect(self.searchwindow)
 
-        self.setMenuWidget(window)
+        tool = QToolBar()
+        tool.setMovable(True)
+        tool.addAction(file_action)
+        tool.addAction(edit_action)
+        self.addToolBar(tool)
 
         self.table = QTableWidget()
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(("ID", "Name", "Course", "Mobile"))
         self.table.verticalHeader().setVisible(False)
         self.setCentralWidget(self.table)
+
+        self.status = QStatusBar()
+        self.setStatusBar(self.status)
+        self.table.cellClicked.connect(self.cell_clicked)
+
+    def cell_clicked(self):
+        edit = QPushButton("Edit Record")
+        edit.clicked.connect(self.edit)
+        delete = QPushButton("Delete Record")
+        delete.clicked.connect(self.delete)
+        children = self.findChildren(QPushButton)
+        if children:
+            for n in children:
+                self.status.removeWidget(n)
+        print(children)
+        self.status.addWidget(edit)
+        self.status.addWidget(delete)
 
     def load_date(self):
         connection = sqlite3.connect("database.db")
@@ -57,6 +80,68 @@ class MainWindow(QMainWindow):
         searchwin = SearchWindow()
         searchwin.exec()
 
+    def edit(self):
+        edit = EditDialog()
+        edit.exec()
+
+    def delete(self):
+        delete = DeleteDialog()
+        delete.exec()
+
+class EditDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Update Student")
+        self.setFixedHeight(300)
+        self.setFixedWidth(300)
+        box = QVBoxLayout()
+
+        id = app1.table.currentRow()
+        self.id= app1.table.item(id, 0).text()
+
+        index = app1.table.currentRow()
+        print(index)
+        name = app1.table.item(index,1).text()
+        self.name = QLineEdit(name)
+
+        self.course = QComboBox()
+        lis = ["Nuclear Chemistry", "Computer Science", "Physics",
+               "Mathematics", "Botony"]
+        course = app1.table.item(index, 2).text()
+        self.course.addItems(lis)
+        self.course.setCurrentText(course)
+
+        mobile = app1.table.item(index, 3).text()
+        self.mobile = QLineEdit(mobile)
+
+
+        update = QPushButton("Update")
+        update.clicked.connect(self.update_stu)
+
+        box.addWidget(self.name)
+        box.addWidget(self.course)
+        box.addWidget(self.mobile)
+        box.addWidget(update)
+
+        self.setLayout(box)
+
+    def update_stu(self):
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+        cursor.execute("UPDATE records SET Name=?, Course = ?, Mobile =? WHERE ID = ?", (self.name.text(),
+                                                                          self.course.itemText(self.course.currentIndex()),
+                                                                          self.mobile.text(),
+                                                                          self.id))
+        connection.commit()
+        cursor.close()
+        connection.close()
+        app1.load_date()
+
+class DeleteDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Delete Record")
+        pass
 
 class AddStudent(QDialog):
     def __init__(self):
