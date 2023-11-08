@@ -6,6 +6,14 @@ import sys
 import sqlite3
 from PyQt6.QtCore import Qt
 
+class Connection:
+    def __init__(self, database_file ="database.db"):
+        self.database_file = database_file
+
+    def connect(self):
+        connection = sqlite3.connect(self.database_file)
+        return connection
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -64,7 +72,7 @@ class MainWindow(QMainWindow):
         self.status.addWidget(delete)
 
     def load_date(self):
-        connection = sqlite3.connect("database.db")
+        connection = Connection().connect()
         cursor = connection.cursor()
         data = cursor.execute("SELECT * FROM records")
         self.table.setRowCount(0)
@@ -130,7 +138,7 @@ class EditDialog(QDialog):
         self.setLayout(box)
 
     def update_stu(self):
-        connection = sqlite3.connect("database.db")
+        connection = Connection().connect()
         cursor = connection.cursor()
         cursor.execute("UPDATE records SET Name=?, Course = ?, Mobile =? WHERE ID = ?", (self.name.text(),
                                                                           self.course.itemText(self.course.currentIndex()),
@@ -161,7 +169,7 @@ class DeleteDialog(QDialog):
     def delet(self):
         index= app1.table.currentRow()
         id= app1.table.item(index, 0).text()
-        connection = sqlite3.connect("database.db")
+        connection = Connection().connect()
         cursor = connection.cursor()
         cursor.execute("DELETE FROM records WHERE ID=?", (id,))
         connection.commit()
@@ -209,8 +217,8 @@ class AddStudent(QDialog):
         name = self.name.text()
         course= self.course.itemText(self.course.currentIndex())
         mobile= self.mobile.text()
-        connection = sqlite3.connect("database.db")
-        cursor=  connection.cursor()
+        connection = Connection().connect()
+        cursor = connection.cursor()
         cursor.execute("INSERT INTO records (Name, Course, Mobile) VALUES(?, ?, ?)", (name, course, mobile)) # first () represents the name of the columns as per database
         connection.commit()
         cursor.close()
@@ -237,7 +245,7 @@ class SearchWindow(QDialog):
 
     def search(self):
         key = self.inp_label.text()
-        connection= sqlite3.connect("database.db")
+        connection = Connection().connect()
         cursor = connection.cursor()
         data = cursor.execute("SELECT * FROM records")
         content = list(data)
